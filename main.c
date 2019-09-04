@@ -158,6 +158,7 @@ void main(void)
         case CHECK_KEYPAD:
             currKey = getKey();
             int ret;
+            int test = &alienList;
             if (currKey == '1' || currKey == '2' || currKey == '3' || currKey == '4' || currKey == '5')
               ret =  killLowest(currKey, &numberAliens, &alienList);
             if (ret != -1){
