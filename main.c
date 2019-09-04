@@ -20,35 +20,68 @@ void swDelay(char numLoops);
 
 enum state{INITIAL_SCREEN, GENERATE_LEVEL, DRAW_SCREEN, CHECK_KEYPAD, GAME_CONDITIONS, COUNTDOWN};
 
+typedef struct alien{
+    int x;
+    int y;
+    char id[2];
+}alien;
+
+
+int killLowest(char input, int *numberAliens, alien* alienList){
+    int i = 0;
+    int lowest = 120;
+    int lowestIndex = -1;
+    for(; i < *numberAliens; i++){
+        if(alienList[i].id[0] == input && alienList[i].y < lowest){
+                lowestIndex = i;
+                lowest = alienList[i].y;
+        }
+    }
+    if(lowest != 120){
+        i = lowestIndex;
+        for (; i < 39; i++){
+            alienList[i] = alienList[i+1];
+        }
+        *numberAliens--;
+        return 0;
+    }
+    return -1;
+}
+
+char * intTostring(int num){
+    char str[2];
+    str[0] = num + '0';
+    str[1] = '\0';
+    return str;
+}
+
 
 // Main
 void main(void)
 
 {
     srand (time(NULL));
-    struct alien{
-        int x;
-        int y;
-        char id[2];
-    };
+
 
     enum state currentState = INITIAL_SCREEN;
     unsigned char currKey=0, dispSz = 3;
-    struct alien alienList[40];
+    alien alienList[40];
     int numberAliens = 3;
-    struct alien one;
+
+    //Initializing array
+    alien one;
     one.x = (rand() % 5) * 18 + 12;
     one.y = 10;
     one.id[0] = '1';
     one.id[1] = '\0';
     alienList[0] = one;
-    struct alien two;
+    alien two;
     two.x = (rand() % 5) * 18 + 12;
     two.y = 10;
     two.id[0] = '2';
     two.id[1] = '\0';
     alienList[1] = two;
-    struct alien three;
+    alien three;
     three.x = (rand() % 5) * 18 + 12;
     three.y = 10;
     three.id[0] = '3';
@@ -123,8 +156,20 @@ void main(void)
             currentState = CHECK_KEYPAD;
             break;
         case CHECK_KEYPAD:
-            Graphics_drawStringCentered(&g_sContext, "Keypad", AUTO_STRING_LENGTH, 48, 75, TRANSPARENT_TEXT);
+            currKey = getKey();
+            int ret;
+            if (currKey == '1' || currKey == '2' || currKey == '3' || currKey == '4' || currKey == '5')
+              ret =  killLowest(currKey, &numberAliens, &alienList);
+            if (ret != -1){
+                Graphics_drawStringCentered(&g_sContext,intTostring(numberAliens) , AUTO_STRING_LENGTH, 48, 55, TRANSPARENT_TEXT);
+                Graphics_flushBuffer(&g_sContext);
+            }
+
             break;
+
+
+
+
 
         }
 
