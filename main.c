@@ -27,7 +27,7 @@ typedef struct alien{
 }alien;
 
 
-int killLowest(char input, int *numberAliens, alien* alienList){
+int killLowest(char input, int *numberAliens, alien alienList[40]){
     int i = 0;
     int lowest = 120;
     int lowestIndex = -1;
@@ -42,7 +42,7 @@ int killLowest(char input, int *numberAliens, alien* alienList){
         for (; i < 39; i++){
             alienList[i] = alienList[i+1];
         }
-        *numberAliens--;
+        *numberAliens = *numberAliens - 1;
         return 0;
     }
     return -1;
@@ -67,7 +67,7 @@ void main(void)
     unsigned char currKey=0, dispSz = 3;
     alien alienList[40];
     int numberAliens = 3;
-
+    int tests[4];
     //Initializing array
     alien one;
     one.x = (rand() % 5) * 18 + 12;
@@ -158,13 +158,10 @@ void main(void)
         case CHECK_KEYPAD:
             currKey = getKey();
             int ret;
-            int test = &alienList;
             if (currKey == '1' || currKey == '2' || currKey == '3' || currKey == '4' || currKey == '5')
-              ret =  killLowest(currKey, &numberAliens, &alienList);
-            if (ret != -1){
-                Graphics_drawStringCentered(&g_sContext,intTostring(numberAliens) , AUTO_STRING_LENGTH, 48, 55, TRANSPARENT_TEXT);
-                Graphics_flushBuffer(&g_sContext);
-            }
+                ret =  killLowest(currKey, &numberAliens, alienList);
+            currentState = DRAW_SCREEN;
+
 
             break;
 
