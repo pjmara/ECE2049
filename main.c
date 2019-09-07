@@ -26,12 +26,17 @@ typedef struct alien{
     char id[2];
 }alien;
 
+char randomChar(){
+    int num = (rand() % 5) + 1;
+    return num + '0';
+}
+
 void lowerAliens(int* numberAliens, alien alienList[40]){
 
     if (*numberAliens > 0){
         int i;
         for( i = 0; i < *numberAliens; i++){
-            alienList[i].y = alienList[i].y + 5;
+            alienList[i].y = alienList[i].y + 10;
         }
     }
 }
@@ -39,15 +44,15 @@ void lowerAliens(int* numberAliens, alien alienList[40]){
 
 int killLowest(char input, int *numberAliens, alien alienList[40]){
     int i = 0;
-    int lowest = 120;
+    int lowest = 0;
     int lowestIndex = -1;
     for(; i < *numberAliens; i++){
-        if(alienList[i].id[0] == input && alienList[i].y < lowest){
+        if(alienList[i].id[0] == input && alienList[i].y > lowest){
                 lowestIndex = i;
                 lowest = alienList[i].y;
         }
     }
-    if(lowest != 120){
+    if(lowest != 0){
         i = lowestIndex;
         for (; i < 39; i++){
             alienList[i] = alienList[i+1];
@@ -77,9 +82,17 @@ void main(void)
     unsigned char currKey=0, dispSz = 3;
     alien alienList[40];
     int numberAliens = 3;
+
+    long unsigned int checkFrequency = 20000;
+    int levelAliens = 5;
+    int kill = 0;
     long unsigned int counter = 0;
     bool updateKill = false;
-    bool updateLowering = false;;
+    bool updateLowering = false;
+
+    bool firstKeyPress = true;
+    unsigned long int timeOffset = checkFrequency;
+    bool overlap = false;
 
 
 
@@ -173,10 +186,28 @@ void main(void)
             break;
         case CHECK_KEYPAD:
             currKey = getKey();
-            int ret;
+            int ret = -1;
+            updateKill = false;
             if (currKey == '1' || currKey == '2' || currKey == '3' || currKey == '4' || currKey == '5'){
-                ret =  killLowest(currKey, &numberAliens, alienList);
+                if (firstKeyPress) {
+                    ret =  killLowest(currKey, &numberAliens, alienList);
+                    timeOffset = counter;
+                    if (counter + 2000 > checkFrequency) {
+                        overlap = true;
+                    }
+                    else {
+                        overlap = false;
+                    }
+                    firstKeyPress = false;
+                }
+                else if (timeOffset + 2000 < counter || (overlap && (timeOffset + 2000 - checkFrequency < counter))) {
+                    firstKeyPress = true;
+                }
+
+
+
                 if(ret == 0){
+                    kill++;
                     updateKill = true;
                 }
                 else{
@@ -191,7 +222,7 @@ void main(void)
         case GAME_CONDITION:
 
 
-            if(counter >= 60000){
+            if(counter >= checkFrequency){
                 lowerAliens(&numberAliens, alienList);
                 updateLowering = true;
                 counter = 0;
@@ -199,11 +230,37 @@ void main(void)
             else{
                 updateLowering = false;
             }
+
+
+            if (updateLowering && kill + numberAliens < levelAliens && numberAliens < 40){
+               if (rand() % 2){
+                   alien temp;
+                   temp.x = (rand() % 5) * 18 + 12;
+                   temp.y = 10;
+                   temp.id[0] = randomChar();
+                   temp.id[1] = '\0';
+                   alienList[numberAliens] = temp;
+                   numberAliens++;
+               }
+            }
+
             if (updateLowering || updateKill){
                 currentState = DRAW_SCREEN;
             }
             else{
                 currentState = CHECK_KEYPAD;
+            }
+
+            if (kill >= levelAliens){
+                kill = 0;
+                firstKeyPress = true;
+                levelAliens += 5;
+                int level = levelAliens / 5;
+                checkFrequency = checkFrequency - (150 * level * level);
+                Graphics_clearDisplay(&g_sContext); // Clear the display
+                Graphics_drawStringCentered(&g_sContext, "Level Cleared", AUTO_STRING_LENGTH, 48, 45, TRANSPARENT_TEXT);
+                Graphics_flushBuffer(&g_sContext);
+                swDelay(2);
             }
 
             break;
@@ -214,6 +271,9 @@ void main(void)
 
         }
         counter++;
+        if (timeOffset + 2000 < counter || (overlap && (timeOffset + 2000 - checkFrequency < counter))) {
+            firstKeyPress = true;
+        }
 
 
      /*   // Check if any keys have been pressed on the 3x4 keypad
