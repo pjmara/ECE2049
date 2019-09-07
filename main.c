@@ -18,13 +18,23 @@ void swDelay(char numLoops);
 
 // Declare globals here
 
-enum state{INITIAL_SCREEN, GENERATE_LEVEL, DRAW_SCREEN, CHECK_KEYPAD, GAME_CONDITIONS, COUNTDOWN};
+enum state{INITIAL_SCREEN, GENERATE_LEVEL, DRAW_SCREEN, CHECK_KEYPAD, GAME_CONDITIONS, COUNTDOWN, GAME_CONDITION};
 
 typedef struct alien{
     int x;
     int y;
     char id[2];
 }alien;
+
+void lowerAliens(int* numberAliens, alien alienList[40]){
+
+    if (*numberAliens > 0){
+        int i;
+        for( i = 0; i < *numberAliens; i++){
+            alienList[i].y = alienList[i].y + 5;
+        }
+    }
+}
 
 
 int killLowest(char input, int *numberAliens, alien alienList[40]){
@@ -67,7 +77,13 @@ void main(void)
     unsigned char currKey=0, dispSz = 3;
     alien alienList[40];
     int numberAliens = 3;
-    int tests[4];
+    long unsigned int counter = 0;
+    bool updateKill = false;
+    bool updateLowering = false;;
+
+
+
+
     //Initializing array
     alien one;
     one.x = (rand() % 5) * 18 + 12;
@@ -158,10 +174,37 @@ void main(void)
         case CHECK_KEYPAD:
             currKey = getKey();
             int ret;
-            if (currKey == '1' || currKey == '2' || currKey == '3' || currKey == '4' || currKey == '5')
+            if (currKey == '1' || currKey == '2' || currKey == '3' || currKey == '4' || currKey == '5'){
                 ret =  killLowest(currKey, &numberAliens, alienList);
-            currentState = DRAW_SCREEN;
+                if(ret == 0){
+                    updateKill = true;
+                }
+                else{
+                    updateKill = false;
+                }
+            }
+            currentState = GAME_CONDITION;
 
+
+            break;
+
+        case GAME_CONDITION:
+
+
+            if(counter >= 60000){
+                lowerAliens(&numberAliens, alienList);
+                updateLowering = true;
+                counter = 0;
+            }
+            else{
+                updateLowering = false;
+            }
+            if (updateLowering || updateKill){
+                currentState = DRAW_SCREEN;
+            }
+            else{
+                currentState = CHECK_KEYPAD;
+            }
 
             break;
 
@@ -170,6 +213,7 @@ void main(void)
 
 
         }
+        counter++;
 
 
      /*   // Check if any keys have been pressed on the 3x4 keypad
