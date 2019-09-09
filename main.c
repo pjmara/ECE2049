@@ -77,18 +77,18 @@ int killLowest(char input, int *numberAliens, alien alienList[40]){
     return -1;
 }
 
-char * intTostring(int num){
+/*char * intTostring(int num){
     char str[2];
     str[0] = num + '0';
     str[1] = '\0';
     return str;
-}
+}*/
 
 
 // Main
 void main(void)
 
-{
+ {
     srand (time(NULL));
 
 
@@ -153,20 +153,26 @@ void main(void)
                 }
                 break;
         case COUNTDOWN:
+            BuzzerOnCustom(5);
             Graphics_clearDisplay(&g_sContext); // Clear the display
             Graphics_drawStringCentered(&g_sContext, "3...", AUTO_STRING_LENGTH, 48, 45, TRANSPARENT_TEXT);
             Graphics_flushBuffer(&g_sContext);
             swDelay(2);
+            BuzzerOff();
 
+            BuzzerOnCustom(4);
             Graphics_clearDisplay(&g_sContext); // Clear the display
             Graphics_drawStringCentered(&g_sContext, "2...", AUTO_STRING_LENGTH, 48, 45, TRANSPARENT_TEXT);
             Graphics_flushBuffer(&g_sContext);
             swDelay(2);
+            BuzzerOff();
 
+            BuzzerOnCustom(3);
             Graphics_clearDisplay(&g_sContext); // Clear the display
             Graphics_drawStringCentered(&g_sContext, "1...", AUTO_STRING_LENGTH, 48, 45, TRANSPARENT_TEXT);
             Graphics_flushBuffer(&g_sContext);
             swDelay(2);
+            BuzzerOff();
 
             numberAliens = 3;
 
@@ -204,6 +210,7 @@ void main(void)
             currentState = DRAW_SCREEN;
 
         case DRAW_SCREEN:
+
             Graphics_clearDisplay(&g_sContext); // Clear the display
             int i;
             for (i = 0; i < numberAliens; i++){
@@ -213,6 +220,7 @@ void main(void)
             Graphics_drawRectangle(&g_sContext, &box);
             Graphics_flushBuffer(&g_sContext);
             currentState = CHECK_KEYPAD;
+            BuzzerOff();
             break;
         case CHECK_KEYPAD:
             currKey = getKey();
@@ -239,6 +247,7 @@ void main(void)
                 if(ret == 0){
                     kill++;
                     updateKill = true;
+                    BuzzerOnCustom(1);
                 }
                 else{
                     updateKill = false;
@@ -264,6 +273,7 @@ void main(void)
 
             if (updateLowering && kill + numberAliens < levelAliens && numberAliens < 40){
                if (rand() % 2){
+                   BuzzerOnCustom(10);
                    alien temp;
                    temp.x = (rand() % 5) * 18 + 12;
                    temp.y = 10;
@@ -282,6 +292,7 @@ void main(void)
             }
 
             if(gameOver(&numberAliens, alienList)){
+                BuzzerOnCustom(2);
                 Graphics_clearDisplay(&g_sContext); // Clear the display
                 Graphics_drawStringCentered(&g_sContext, "I", AUTO_STRING_LENGTH, 48, 35, TRANSPARENT_TEXT);
                 Graphics_drawStringCentered(&g_sContext, "Am", AUTO_STRING_LENGTH, 48, 45, TRANSPARENT_TEXT);
@@ -291,6 +302,7 @@ void main(void)
                 Graphics_clearDisplay(&g_sContext); // Clear the display
                 numberAliens = 0;
                 currentState = INITIAL_SCREEN;
+                BuzzerOff();
             }
 
             if (kill >= levelAliens){
