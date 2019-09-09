@@ -31,6 +31,20 @@ char randomChar(){
     return num + '0';
 }
 
+bool gameOver(int* numberAliens, alien alienList[40]){
+
+    if (*numberAliens > 0){
+        int i;
+        for( i = 0; i < *numberAliens; i++){
+           if (alienList[i].y > 80){
+               return true;
+           }
+        }
+    }
+
+    return false;
+}
+
 void lowerAliens(int* numberAliens, alien alienList[40]){
 
     if (*numberAliens > 0){
@@ -83,7 +97,7 @@ void main(void)
     alien alienList[40];
     int numberAliens = 3;
 
-    long unsigned int checkFrequency = 20000;
+    long unsigned int checkFrequency = 10000;
     int levelAliens = 5;
     int kill = 0;
     long unsigned int counter = 0;
@@ -97,25 +111,7 @@ void main(void)
 
 
 
-    //Initializing array
-    alien one;
-    one.x = (rand() % 5) * 18 + 12;
-    one.y = 10;
-    one.id[0] = '1';
-    one.id[1] = '\0';
-    alienList[0] = one;
-    alien two;
-    two.x = (rand() % 5) * 18 + 12;
-    two.y = 10;
-    two.id[0] = '2';
-    two.id[1] = '\0';
-    alienList[1] = two;
-    alien three;
-    three.x = (rand() % 5) * 18 + 12;
-    three.y = 10;
-    three.id[0] = '3';
-    three.id[1] = '\0';
-    alienList[2] = three;
+
 
 
     WDTCTL = WDTPW | WDTHOLD;    // Stop watchdog timer. Always need to stop this!!
@@ -163,15 +159,49 @@ void main(void)
             swDelay(2);
 
             Graphics_clearDisplay(&g_sContext); // Clear the display
-                        Graphics_drawStringCentered(&g_sContext, "2...", AUTO_STRING_LENGTH, 48, 45, TRANSPARENT_TEXT);
-                        Graphics_flushBuffer(&g_sContext);
-                        swDelay(2);
+            Graphics_drawStringCentered(&g_sContext, "2...", AUTO_STRING_LENGTH, 48, 45, TRANSPARENT_TEXT);
+            Graphics_flushBuffer(&g_sContext);
+            swDelay(2);
 
-                        Graphics_clearDisplay(&g_sContext); // Clear the display
-                                    Graphics_drawStringCentered(&g_sContext, "1...", AUTO_STRING_LENGTH, 48, 45, TRANSPARENT_TEXT);
-                                    Graphics_flushBuffer(&g_sContext);
-                                    swDelay(2);
-                                    currentState = DRAW_SCREEN;
+            Graphics_clearDisplay(&g_sContext); // Clear the display
+            Graphics_drawStringCentered(&g_sContext, "1...", AUTO_STRING_LENGTH, 48, 45, TRANSPARENT_TEXT);
+            Graphics_flushBuffer(&g_sContext);
+            swDelay(2);
+
+            numberAliens = 3;
+
+            checkFrequency = 10000;
+            levelAliens = 5;
+            kill = 0;
+            counter = 0;
+            updateKill = false;
+            updateLowering = false;
+
+            firstKeyPress = true;
+            timeOffset = checkFrequency;
+            overlap = false;
+
+            //Initializing array
+            alien one;
+            one.x = (rand() % 5) * 18 + 12;
+            one.y = 10;
+            one.id[0] = '1';
+            one.id[1] = '\0';
+            alienList[0] = one;
+            alien two;
+            two.x = (rand() % 5) * 18 + 12;
+            two.y = 10;
+            two.id[0] = '2';
+            two.id[1] = '\0';
+            alienList[1] = two;
+            alien three;
+            three.x = (rand() % 5) * 18 + 12;
+            three.y = 10;
+            three.id[0] = '3';
+            three.id[1] = '\0';
+            alienList[2] = three;
+
+            currentState = DRAW_SCREEN;
 
         case DRAW_SCREEN:
             Graphics_clearDisplay(&g_sContext); // Clear the display
@@ -249,6 +279,18 @@ void main(void)
             }
             else{
                 currentState = CHECK_KEYPAD;
+            }
+
+            if(gameOver(&numberAliens, alienList)){
+                Graphics_clearDisplay(&g_sContext); // Clear the display
+                Graphics_drawStringCentered(&g_sContext, "I", AUTO_STRING_LENGTH, 48, 35, TRANSPARENT_TEXT);
+                Graphics_drawStringCentered(&g_sContext, "Am", AUTO_STRING_LENGTH, 48, 45, TRANSPARENT_TEXT);
+                Graphics_drawStringCentered(&g_sContext, "Inevitable", AUTO_STRING_LENGTH, 48, 55, TRANSPARENT_TEXT);
+                Graphics_flushBuffer(&g_sContext);
+                swDelay(4);
+                Graphics_clearDisplay(&g_sContext); // Clear the display
+                numberAliens = 0;
+                currentState = INITIAL_SCREEN;
             }
 
             if (kill >= levelAliens){
